@@ -1,6 +1,6 @@
 # PostHero CLI
 
-Create, schedule, and publish social media posts from the terminal.
+Create, schedule, and publish social media posts from the terminal. View analytics. Automate your content workflow from CI/CD pipelines, scripts, or just the command line.
 
 ## Installation
 
@@ -26,7 +26,7 @@ Or pass it inline with any command using `--key <your-api-key>`.
 posthero accounts list
 ```
 
-Lists all your connected social media accounts with their IDs. You'll need account IDs when creating posts.
+Lists all your connected social media accounts with their IDs. You'll need account IDs when creating posts or filtering analytics.
 
 ### Posts
 
@@ -116,6 +116,51 @@ posthero media upload ./image.jpg
 
 Uploads a file and returns the URL to use in posts.
 
+### Analytics
+
+Read engagement metrics for posts published across Twitter, Threads, Instagram, TikTok, and YouTube.
+
+Supported platforms: `twitter` `threads` `instagram` `tiktok` `youtube`
+
+**Summary — aggregated KPIs**
+```bash
+posthero analytics summary --platform threads
+posthero analytics summary --platform instagram --start 2026-03-01 --end 2026-03-31
+posthero analytics summary --platform twitter --account <accountId>
+```
+
+**Posts — paginated analytics**
+```bash
+posthero analytics posts --platform threads
+posthero analytics posts --platform threads --sort-by likes --limit 20
+posthero analytics posts --platform youtube --sort-by watchMinutes --page 2
+```
+
+**Top performers**
+```bash
+posthero analytics top --platform threads
+posthero analytics top --platform twitter --metric impressions --limit 5
+posthero analytics top --platform instagram --metric saves --start 2026-03-01
+```
+
+Available metrics per platform:
+
+| Platform | Metrics |
+|----------|---------|
+| `twitter` | `impressions`, `likes`, `replies`, `retweets`, `bookmarks`, `url_clicks`, `engagement_rate` |
+| `threads` | `impressions`, `likes`, `replies`, `reposts`, `quotes`, `engagement_rate` |
+| `instagram` | `impressions`, `reach`, `likes`, `replies`, `saves`, `shares`, `engagement_rate` |
+| `tiktok` | `impressions`, `likes`, `replies`, `shares`, `engagement_rate` |
+| `youtube` | `views`, `likes`, `replies`, `shares`, `watchMinutes`, `subscribersGained`, `engagement_rate` |
+
+**Follower growth**
+```bash
+posthero analytics follower-growth --platform threads --account <accountId>
+posthero analytics follower-growth --platform twitter --account <accountId> --start 2026-03-01 --end 2026-03-31
+```
+
+Get your account IDs from `posthero accounts list`.
+
 ## Global Options
 
 | Option | Description |
@@ -138,11 +183,31 @@ Use `--json` to get machine-readable output:
 # Get all account IDs
 posthero accounts list --json | jq '.[].id'
 
+# Get top 10 posts as JSON
+posthero analytics top --platform threads --limit 10 --json
+
+# Get summary for last 30 days
+posthero analytics summary --platform twitter --start 2026-03-01 --end 2026-03-31 --json
+
 # Create a post from a script
 posthero posts create \
   --text "$(cat post.txt)" \
   --platforms "linkedin:<accountId>" \
   --json
+```
+
+## CI/CD Example
+
+```yaml
+# .github/workflows/release.yml
+- name: Announce release
+  run: |
+    posthero posts create \
+      --text "Version ${{ github.ref_name }} is live!" \
+      --platforms "linkedin:<accountId>,twitter:<accountId>" \
+      --now
+  env:
+    POSTHERO_API_KEY: ${{ secrets.POSTHERO_API_KEY }}
 ```
 
 ## Requirements

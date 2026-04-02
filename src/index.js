@@ -3,10 +3,11 @@
 const { Command } = require('commander');
 const pkg = require('../package.json');
 
-const loginCmd  = require('./commands/login');
-const accountsCmd = require('./commands/accounts');
-const postsCmd  = require('./commands/posts');
-const mediaCmd  = require('./commands/media');
+const loginCmd      = require('./commands/login');
+const accountsCmd   = require('./commands/accounts');
+const postsCmd      = require('./commands/posts');
+const mediaCmd      = require('./commands/media');
+const analyticsCmd  = require('./commands/analytics');
 
 const program = new Command();
 
@@ -118,6 +119,56 @@ globalOptions(
     .command('upload <file>')
     .description('Upload an image, video, or PDF and get back an S3 URL')
 ).action((file, opts) => mediaCmd.uploadCommand(file, opts));
+
+// ── analytics ─────────────────────────────────────────────────────────────────
+
+const analytics = program.command('analytics').description('View post analytics and follower growth');
+
+globalOptions(
+  analytics
+    .command('summary')
+    .description('Aggregated KPIs for a platform (impressions, likes, engagement rate, etc.)')
+    .option('--platform <platform>', 'Platform: twitter | threads | instagram | tiktok | youtube')
+    .option('--account <id>', 'Filter to a specific account ID')
+    .option('--start <date>', 'Start date (ISO 8601, e.g. 2026-03-01)')
+    .option('--end <date>', 'End date (ISO 8601, e.g. 2026-03-31)')
+).action(opts => analyticsCmd.summary(opts));
+
+globalOptions(
+  analytics
+    .command('posts')
+    .description('Paginated post analytics sorted by any metric')
+    .option('--platform <platform>', 'Platform: twitter | threads | instagram | tiktok | youtube')
+    .option('--account <id>', 'Filter to a specific account ID')
+    .option('--start <date>', 'Start date (ISO 8601)')
+    .option('--end <date>', 'End date (ISO 8601)')
+    .option('--sort-by <metric>', 'Metric to sort by (e.g. impressions, likes, engagement_rate)')
+    .option('--sort-order <order>', 'desc (default) or asc')
+    .option('--page <n>', 'Page number', '1')
+    .option('--limit <n>', 'Posts per page (max 100)', '20')
+).action(opts => analyticsCmd.posts(opts));
+
+globalOptions(
+  analytics
+    .command('top')
+    .description('Top N posts by a given metric')
+    .option('--platform <platform>', 'Platform: twitter | threads | instagram | tiktok | youtube')
+    .option('--metric <metric>', 'Metric to rank by (e.g. impressions, likes, engagement_rate, saves)')
+    .option('--limit <n>', 'Number of posts (max 50)', '10')
+    .option('--account <id>', 'Filter to a specific account ID')
+    .option('--start <date>', 'Start date (ISO 8601)')
+    .option('--end <date>', 'End date (ISO 8601)')
+).action(opts => analyticsCmd.top(opts));
+
+globalOptions(
+  analytics
+    .command('follower-growth')
+    .description('Follower count and growth delta for an account')
+    .option('--platform <platform>', 'Platform: twitter | threads | instagram | tiktok | youtube')
+    .option('--account <id>', 'Account ID (required)')
+    .option('--start <date>', 'Start date (ISO 8601)')
+    .option('--end <date>', 'End date (ISO 8601)')
+).action(opts => analyticsCmd.followerGrowth(opts));
 
 // ── parse ─────────────────────────────────────────────────────────────────────
 
