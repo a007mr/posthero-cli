@@ -161,6 +161,29 @@ posthero analytics follower-growth --platform twitter --account <accountId> --st
 
 Get your account IDs from `posthero accounts list`.
 
+### Status
+
+```bash
+posthero status
+```
+
+Shows connected accounts grouped by platform and a post count summary (published / scheduled / drafts).
+
+### Shell Completion
+
+```bash
+# zsh — add to ~/.zshrc for permanent use
+source <(posthero completion zsh)
+
+# bash — add to ~/.bashrc for permanent use
+source <(posthero completion bash)
+
+# fish
+posthero completion fish > ~/.config/fish/completions/posthero.fish
+```
+
+After loading, press Tab to autocomplete commands and subcommands.
+
 ## Global Options
 
 | Option | Description |
@@ -174,6 +197,7 @@ Get your account IDs from `posthero accounts list`.
 |----------|-------------|
 | `POSTHERO_API_KEY` | Your API key |
 | `POSTHERO_BASE_URL` | API base URL (default: `https://server.posthero.ai/api/v1`) |
+| `POSTHERO_DEBUG` | Set to `1` to print request/response details to stderr |
 
 ## Scripting
 

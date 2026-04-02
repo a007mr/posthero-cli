@@ -1,6 +1,6 @@
 {
   "name": "@posthero/cli",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "PostHero CLI — create, schedule, and publish social media posts from the terminal",
   "license": "MIT",
   "author": "PostHero",

@@ -8,6 +8,9 @@ const accountsCmd   = require('./commands/accounts');
 const postsCmd      = require('./commands/posts');
 const mediaCmd      = require('./commands/media');
 const analyticsCmd  = require('./commands/analytics');
+const statusCmd     = require('./commands/status');
+const completionCmd = require('./commands/completion');
+const { checkForUpdate } = require('./update');
 
 const program = new Command();
 
@@ -43,7 +46,13 @@ globalOptions(
 
 // ── accounts ─────────────────────────────────────────────────────────────────
 
-const accounts = program.command('accounts').description('Manage connected social media accounts');
+const accounts = program
+  .command('accounts')
+  .description('Manage connected social media accounts')
+  .addHelpText('after', `
+Examples:
+  posthero accounts list
+  posthero accounts list --json`);
 
 globalOptions(
   accounts
@@ -53,7 +62,15 @@ globalOptions(
 
 // ── posts ─────────────────────────────────────────────────────────────────────
 
-const posts = program.command('posts').description('Create and manage posts');
+const posts = program
+  .command('posts')
+  .description('Create and manage posts')
+  .addHelpText('after', `
+Examples:
+  posthero posts list --status scheduled
+  posthero posts create --text "Hello!" --platforms "twitter:<id>" --now
+  posthero posts create --file post.md --platforms "linkedin:<id>" --schedule 2026-04-01T09:00:00Z
+  posthero posts publish <id>`);
 
 globalOptions(
   posts
@@ -112,7 +129,13 @@ globalOptions(
 
 // ── media ─────────────────────────────────────────────────────────────────────
 
-const media = program.command('media').description('Upload media files');
+const media = program
+  .command('media')
+  .description('Upload media files')
+  .addHelpText('after', `
+Examples:
+  posthero media upload ./image.jpg
+  posthero media upload ./video.mp4 --json`);
 
 globalOptions(
   media
@@ -120,9 +143,37 @@ globalOptions(
     .description('Upload an image, video, or PDF and get back an S3 URL')
 ).action((file, opts) => mediaCmd.uploadCommand(file, opts));
 
+// ── status ────────────────────────────────────────────────────────────────────
+
+globalOptions(
+  program
+    .command('status')
+    .description('Show account and post overview')
+).action(opts => statusCmd.status(opts));
+
+// ── completion ────────────────────────────────────────────────────────────────
+
+program
+  .command('completion <shell>')
+  .description('Output shell completion script (zsh | bash | fish)')
+  .addHelpText('after', `
+Examples:
+  source <(posthero completion zsh)
+  source <(posthero completion bash)
+  posthero completion fish > ~/.config/fish/completions/posthero.fish`)
+  .action(shell => completionCmd.completion(shell));
+
 // ── analytics ─────────────────────────────────────────────────────────────────
 
-const analytics = program.command('analytics').description('View post analytics and follower growth');
+const analytics = program
+  .command('analytics')
+  .description('View post analytics and follower growth')
+  .addHelpText('after', `
+Examples:
+  posthero analytics summary --platform threads
+  posthero analytics posts --platform twitter --sort-by impressions --limit 20
+  posthero analytics top --platform instagram --metric saves
+  posthero analytics follower-growth --platform threads --account <id>`);
 
 globalOptions(
   analytics
@@ -172,4 +223,5 @@ globalOptions(
 
 // ── parse ─────────────────────────────────────────────────────────────────────
 
+checkForUpdate().catch(() => {});
 program.parse(process.argv);
